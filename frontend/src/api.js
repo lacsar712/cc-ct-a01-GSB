@@ -54,9 +54,27 @@ export function fetchSubmission(id) {
   return request(`/submissions/${id}`);
 }
 
-export function createSubmission(tool_code, offset_um) {
+export function createSubmission(tool_id, offset_um) {
   return request("/submissions", {
     method: "POST",
-    body: JSON.stringify({ tool_code, offset_um: Number(offset_um) }),
+    body: JSON.stringify({ tool_id, offset_um: Number(offset_um) }),
+  });
+}
+
+export function fetchTools() {
+  return request("/tools");
+}
+
+export function registerTool(tool_code, usable) {
+  return request("/tools", {
+    method: "POST",
+    body: JSON.stringify({ tool_code, usable }),
+  });
+}
+
+export function delistTool(tool_id, reason) {
+  return request(`/tools/${tool_id}/delist`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
   });
 }

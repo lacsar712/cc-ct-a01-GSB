@@ -143,3 +143,48 @@ td {
   color: #b91c1c;
   font-weight: 600;
 }
+
+.tag {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.tag.readonly {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.tag.delisted {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+tr.delisted-row td {
+  background: #fdf2f2;
+}
+
+label.check {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+label.check input {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+button.danger {
+  background: #dc2626;
+  color: #fff;
+}
+
+button.danger.ghost {
+  background: #fee2e2;
+  color: #991b1b;
+}

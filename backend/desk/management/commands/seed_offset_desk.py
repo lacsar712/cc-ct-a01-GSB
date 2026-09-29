@@ -1,12 +1,13 @@
 from django.core.management.base import BaseCommand
+from django.db import transaction
 from django.utils import timezone
 
 from desk.auth_utils import hash_password
-from desk.models import OffsetSubmission, User
+from desk.models import OffsetSubmission, Tool, User
 
 
 class Command(BaseCommand):
-    help = "创建默认账号与种子刀补记录"
+    help = "创建默认账号、清册刀具与种子刀补记录"
 
     def handle(self, *args, **options):
         machinist, _ = User.objects.update_or_create(
@@ -32,15 +33,26 @@ class Command(BaseCommand):
             ("T09", 20, OffsetSubmission.Verdict.FAIL),
         ]
         for tool_code, offset_um, verdict in seeds:
-            OffsetSubmission.objects.update_or_create(
-                tool_code=tool_code,
-                offset_um=offset_um,
-                defaults={
-                    "status": OffsetSubmission.Status.DONE,
-                    "verdict": verdict,
-                    "submitted_by": machinist,
-                    "reviewed_at": now,
-                },
-            )
+            with transaction.atomic():
+                tool, _ = Tool.objects.update_or_create(
+                    tool_code=tool_code,
+                    defaults={
+                        "usable": True,
+                        "delisted": False,
+                        "delist_reason": "",
+                        "registered_by": machinist,
+                    },
+                )
+                OffsetSubmission.objects.update_or_create(
+                    tool=tool,
+                    tool_code=tool_code,
+                    offset_um=offset_um,
+                    defaults={
+                        "status": OffsetSubmission.Status.DONE,
+                        "verdict": verdict,
+                        "submitted_by": machinist,
+                        "reviewed_at": now,
+                    },
+                )
 
         self.stdout.write(self.style.SUCCESS("seed_offset_desk 完成"))
