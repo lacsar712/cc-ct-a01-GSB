@@ -2,11 +2,11 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from desk.auth_utils import hash_password
-from desk.models import OffsetSubmission, User
+from desk.models import OffsetSubmission, RosterEvent, RosterTool, User
 
 
 class Command(BaseCommand):
-    help = "创建默认账号与种子刀补记录"
+    help = "创建默认账号、清册刀号与种子刀补记录"
 
     def handle(self, *args, **options):
         machinist, _ = User.objects.update_or_create(
@@ -26,6 +26,25 @@ class Command(BaseCommand):
             },
         )
 
+        # 清册：T01 / T09 登进清册并勾为可投
+        roster = {}
+        for tool_code in ("T01", "T09"):
+            tool, created = RosterTool.objects.get_or_create(
+                tool_code=tool_code,
+                defaults={
+                    "state": RosterTool.State.INVESTABLE,
+                    "registered_by": machinist,
+                },
+            )
+            if created:
+                RosterEvent.objects.create(
+                    tool=tool,
+                    tool_code=tool.tool_code,
+                    action=RosterEvent.Action.REGISTERED,
+                    actor=machinist,
+                )
+            roster[tool_code] = tool
+
         now = timezone.now()
         seeds = [
             ("T01", 5, OffsetSubmission.Verdict.PASS),
@@ -38,6 +57,7 @@ class Command(BaseCommand):
                 defaults={
                     "status": OffsetSubmission.Status.DONE,
                     "verdict": verdict,
+                    "roster_tool": roster.get(tool_code),
                     "submitted_by": machinist,
                     "reviewed_at": now,
                 },

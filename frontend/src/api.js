@@ -54,9 +54,38 @@ export function fetchSubmission(id) {
   return request(`/submissions/${id}`);
 }
 
-export function createSubmission(tool_code, offset_um) {
+// 刀号只能从「仍可投」的刀里点选：roster_tool_id 为空选（会整笔退回）
+export function createSubmission(roster_tool_id, offset_um) {
   return request("/submissions", {
     method: "POST",
-    body: JSON.stringify({ tool_code, offset_um: Number(offset_um) }),
+    body: JSON.stringify({
+      roster_tool_id: roster_tool_id || null,
+      offset_um: Number(offset_um),
+    }),
   });
+}
+
+// ---------- 清册 ----------
+
+export function fetchTools() {
+  return request("/roster/tools");
+}
+
+export function fetchEvents() {
+  return request("/roster/events");
+}
+
+export function registerTool(tool_code, investable) {
+  return request("/roster/tools", {
+    method: "POST",
+    body: JSON.stringify({ tool_code, investable }),
+  });
+}
+
+export function delistTool(id) {
+  return request(`/roster/tools/${id}/delist`, { method: "POST" });
+}
+
+export function relistTool(id) {
+  return request(`/roster/tools/${id}/relist`, { method: "POST" });
 }
